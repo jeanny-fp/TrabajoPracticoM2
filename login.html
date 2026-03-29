@@ -53,6 +53,14 @@
                 const email = $('#email').val();
                 const password = $('#password').val();
 
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    $('#loginForm').effect("shake", { times: 3, distance: 8 }, 400);
+                    $('#successMsg').slideUp();
+                    $('#errorMsg').text('Formato de correo inválido.').hide().slideDown();
+                    return;
+                }
+
                 const usuario = JSON.parse(localStorage.getItem('billetera_usuario'));
 
                 if (email === usuario.email && password === usuario.password) {
