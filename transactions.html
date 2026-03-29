@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alke Wallet - Historial</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <main class="billetera-container">
+
+        <header class="page-header">
+            <a href="menu.html" class="back-btn"><i class="bi bi-chevron-left"></i></a>
+            <h2 class="page-title">Estadísticas</h2>
+        </header>
+
+        <div class="form-group mt-3" style="display: none;">
+            <select class="clean-input fw-bold text-primary" id="filterType">
+                <option value="todos">Resumen Total</option>
+                <option value="Ingreso">Ingresos</option>
+                <option value="Envío">Gastos</option>
+            </select>
+        </div>
+
+                <div class="px-3 mb-4 chart-placeholder text-center" style="display:none;">
+            <img src="https://quickchart.io/chart?c={type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Income',data:[40,60,45,70,50,80],backgroundColor:'rgba(138,76,255,0.8)'},{label:'Expense',data:[20,30,15,40,25,35],backgroundColor:'rgba(215,198,255,1)'}]},options:{scales:{yAxes:[{display:false}],xAxes:[{gridLines:{display:false}}]}}}" class="img-fluid rounded-4 shadow-sm" style="height: 150px; object-fit: cover;" alt="Chart">
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center px-4 mb-3">
+            <h3 class="section-title p-0 m-0 text-muted fs-6">Transacciones</h3>
+        </div>
+
+        <section class="lists-container" id="transactionsList">
+                    </section>
+
+                <nav class="bottom-nav">
+            <a href="menu.html" class="nav-item">
+                <i class="bi bi-house-door-fill"></i> Inicio
+            </a>
+            <a href="transactions.html" class="nav-item active">
+                <i class="bi bi-bar-chart-fill"></i> Estadísticas
+            </a>
+            <a href="deposit.html" class="nav-item">
+                <i class="bi bi-wallet-fill"></i> Billetera
+            </a>
+            <a href="login.html" class="nav-item">
+                <i class="bi bi-person-fill"></i> Perfil
+            </a>
+        </nav>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.form-group, .chart-placeholder').delay(100).slideDown(400);
+
+            function renderLista(filtro) {
+                const lista = $('#transactionsList');
+
+                lista.fadeOut(200, function() {
+                    $(this).empty();
+
+                    let movimientos = obtenerMovimientos();
+                    if (filtro !== 'todos') {
+                        movimientos = movimientos.filter(m => m.type === filtro);
+                    }
+
+                    if (movimientos.length === 0) {
+                        $(this).append('<div class="text-center text-muted fw-bold mt-4">Sin movimientos</div>').show();
+                        return;
+                    }
+
+                    movimientos.forEach((movimiento, index) => {
+                        const esIngreso = movimiento.type === 'Ingreso';
+                        const signo = esIngreso ? '+' : '-';
+                        const iconClass = esIngreso ? 'bi-arrow-down-left icon-green' : 'bi-arrow-up-right icon-red';
+                        const amountClass = esIngreso ? 'text-positive' : 'text-dark';
+
+                        const itemHtml = `
+                            <div class="item-card" id="hist-${index}">
+                                <div class="item-left">
+                                    <div class="item-icon ${iconClass}"></div>
+                                    <div>
+                                        <p class="item-name">${movimiento.detail || movimiento.type}</p>
+                                        <p class="item-date">${movimiento.date}</p>
+                                    </div>
+                                </div>
+                                <div class="item-val ${amountClass}">${signo}$${movimiento.amount.toLocaleString('es-CL')}</div>
+                            </div>
+                        `;
+                        $(this).append(itemHtml);
+                    });
+
+                    $(this).show();
+
+                    movimientos.forEach((_, index) => {
+                        $(`#hist-${index}`).delay(index * 100).slideDown(250);
+                    });
+                });
+            }
+
+            renderLista('todos');
+
+            $('#filterType').change(function() {
+                renderLista($(this).val());
+            });
+        });
+    </script>
+</body>
+</html>

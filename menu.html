@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alke Wallet - Home</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <main class="billetera-container">
+                <header class="app-header" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="greeting">Hola de nuevo,</p>
+                    <h2 class="username" id="userName">Usuario</h2>
+                </div>
+                <div class="user-avatar bg-white text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <i class="bi bi-person-fill fs-4"></i>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <p class="balance-title">Balance Total</p>
+                <h1 class="balance-amount" id="balanceDisplay">$0</h1>
+            </div>
+        </header>
+
+                <div class="action-grid" style="display: none;">
+            <div class="action-btn menu-btn" data-url="deposit.html" data-name="Depósito">
+                <i class="bi bi-cloud-arrow-down-fill"></i>
+                <span>Ingreso</span>
+            </div>
+            <div class="action-btn menu-btn" data-url="sendmoney.html" data-name="Transferencia">
+                <i class="bi bi-send-fill"></i>
+                <span>Enviar</span>
+            </div>
+            <div class="action-btn menu-btn" data-url="transactions.html" data-name="Historial">
+                <i class="bi bi-clock-fill"></i>
+                <span>Historial</span>
+            </div>
+            <div class="action-btn menu-btn" data-url="#" data-name="Más">
+                <i class="bi bi-grid-fill"></i>
+                <span>Más</span>
+            </div>
+        </div>
+
+        <div id="redirectMsg" class="alert alert-info alert-custom text-center mt-3" style="display: none;" role="alert"></div>
+
+                <div class="mt-4" style="display: none;" id="recentSection">
+            <div class="d-flex justify-content-between align-items-center px-4 mb-3">
+                <h3 class="section-title p-0 m-0">Últimos Movimientos</h3>
+                <a href="transactions.html" class="text-primary text-decoration-none small fw-bold">Ver Todo</a>
+            </div>
+            <div class="lists-container" id="recentList">
+                            </div>
+        </div>
+
+                <nav class="bottom-nav">
+            <a href="menu.html" class="nav-item active">
+                <i class="bi bi-house-door-fill"></i> Inicio
+            </a>
+            <a href="transactions.html" class="nav-item">
+                <i class="bi bi-bar-chart-fill"></i> Estadísticas
+            </a>
+            <a href="deposit.html" class="nav-item">
+                <i class="bi bi-wallet-fill"></i> Billetera
+            </a>
+            <a href="login.html" class="nav-item">
+                <i class="bi bi-person-fill"></i> Perfil
+            </a>
+        </nav>
+    </main>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        $(document).ready(function() {
+
+            const usuario = JSON.parse(localStorage.getItem('billetera_usuario'));
+            if(usuario && usuario.name) {
+                $('#userName').text(usuario.name);
+            }
+
+            const saldoActual = obtenerSaldo();
+            $({ Counter: 0 }).animate({
+                Counter: saldoActual
+            }, {
+                duration: 1200,
+                easing: 'swing',
+                step: function (now) {
+                    $('#balanceDisplay').text('$' + Math.ceil(now).toLocaleString('es-CL'));
+                }
+            });
+
+            $('.app-header').slideDown(600);
+            $('.action-grid').delay(300).fadeIn(600);
+            $('#recentSection').delay(600).fadeIn(500);
+
+            function renderRecent() {
+                const movimientos = obtenerMovimientos().slice(0, 3); 
+                const container = $('#recentList');
+
+                movimientos.forEach((mov, index) => {
+                    const esIngreso = mov.type === 'Ingreso';
+                    const iconClass = esIngreso ? 'bi-arrow-down-left icon-green' : 'bi-arrow-up-right icon-red';
+                    const amountClass = esIngreso ? 'text-positive' : 'text-dark';
+                    const signo = esIngreso ? '+' : '-';
+
+                    const item = $(`
+                        <div class="item-card" id="recent-${index}">
+                            <div class="item-left">
+                                <div class="item-icon ${iconClass}"></div>
+                                <div>
+                                    <p class="item-name">${mov.detail || mov.type}</p>
+                                    <p class="item-date">${mov.date}</p>
+                                </div>
+                            </div>
+                            <div class="item-val ${amountClass}">${signo}$${mov.amount.toLocaleString('es-CL')}</div>
+                        </div>
+                    `);
+                    container.append(item);
+                    item.delay((index+1)*150 + 600).slideDown(300);
+                });
+            }
+            renderRecent();
+
+            $('.menu-btn').click(function(e) {
+                e.preventDefault();
+                const url = $(this).data('url');
+                const name = $(this).data('name');
+                if(url === '#') return; 
+
+                $('.app-header, .action-grid, #recentSection').slideUp(400);
+
+                setTimeout(() => {
+                    $('#redirectMsg').html(`<div class="spinner-border spinner-border-sm me-2"></div> Abriendo ${name}...`).fadeIn();
+                }, 400);
+
+                setTimeout(() => { window.location.href = url; }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>
